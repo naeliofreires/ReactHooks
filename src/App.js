@@ -1,25 +1,55 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 
 function App() {
+  const [tech, setTech] = useState([]);
+  const [newTech, setNewTech] = useState("");
+
+  /**
+   * Sempre que realizamos alguma ação, o JS reescreve a funcão novamente,
+   * é uma função simples, porém imagina um caso de uma função mais complexa..
+   * porisso, para evitar processamento desnecessário utilizamos o hooks => useCallback
+   *
+   *  function handleAdd() {
+        setTech([...tech, newTech]);
+        setNewTech("");
+      }
+
+      sendo assim, ela so vai ser recriada quando a [newTech e tech] foram alterados!
+   */
+  const handleAdd = useCallback(() => {
+    setTech([...tech, newTech]);
+    setNewTech("");
+  }, [newTech, tech]);
+
+  useEffect(() => {
+    const storageTech = localStorage.getItem("tech");
+
+    if (storageTech) {
+      setTech(JSON.parse(storageTech));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("tech", JSON.stringify(tech));
+  }, [tech]);
+
+  const techSize = useMemo(() => tech.length, [tech]); // só irá executar quando o 'tech' mudar seu estado
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <ul>
+        {tech.map((value, i) => (
+          <li key={i}>{value}</li>
+        ))}
+      </ul>
+      <strong>Você tem {techSize} tecnologias!</strong> <br />
+      <input
+        type="text"
+        value={newTech}
+        onChange={e => setNewTech(e.target.value)}
+      />
+      <button onClick={handleAdd}>add</button>
+    </>
   );
 }
 
